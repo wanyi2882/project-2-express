@@ -16,7 +16,7 @@ app.use(cors());
 async function main() {
     await MongoUtil.connect(process.env.MONGO_URI, "flower_stop_database")
 
-    // Listing Page
+    // Read listing collection
     app.get('/listings', async (req, res) => {
 
         try {
@@ -62,7 +62,7 @@ async function main() {
         }
     })
 
-    // Create and send to listing Page
+    // Create and send to listing collection
     app.post('/listings', async (req, res) => {
 
         try {
@@ -140,7 +140,60 @@ async function main() {
             console.log(e);
         }
     })
-    
+
+    // Read Florists collection
+    app.get('/florists', async (req, res) => {
+
+        try {
+            let db = MongoUtil.getDB();
+
+            // start with an empty critera object
+            let criteria = {};
+   
+            let florists = await db.collection('florists')
+                .find(criteria)
+                .toArray();
+            res.status(200);
+            res.send(florists);
+        } catch (e) {
+            res.status(500);
+            res.send({
+                'error': "We have encountered an internal server error"
+            })
+        }
+    })
+
+    // Update florist document
+    app.post('/florists', async (req, res) =>{
+        try {
+            let name = req.body.name
+            let number = req.body.number
+            let email = req.body.email
+            let instagram = req.body.instagram
+            let facebook = req.body.facebook
+            let social_media = {facebook, instagram}
+            let contact = {number, email, social_media}
+
+            console.log(contact)
+
+
+            let db = MongoUtil.getDB();
+            let result = await db.collection('florists').insertOne({
+                name, contact
+            })
+
+            // inform the client that the process is successful
+            res.status(200);
+            res.json(result);
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.log(e);
+        }
+    })
+
 }
 
 main();
