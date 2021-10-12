@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-require ('dotenv').config();
+require('dotenv').config();
 
 const MongoUtil = require('./MongoUtil.js');
 const ObjectId = require('mongodb').ObjectId;
@@ -13,10 +13,11 @@ app.use(express.json());
 // Enable CORS
 app.use(cors());
 
-async function main(){
+async function main() {
     await MongoUtil.connect(process.env.MONGO_URI, "flower_stop_database")
 
-    app.get('/', async (req, res) => {
+    // Listing Page
+    app.get('/listings', async (req, res) => {
 
         try {
             let db = MongoUtil.getDB();
@@ -24,29 +25,122 @@ async function main(){
             // start with an empty critera object
             let criteria = {};
 
-            // we fill in the critera depending on whether specific
-            // query string keys are provided
-
-            // if the `description` key exists in req.query
-
-            if (req.query.food) {
-                criteria['food'] = {
-                    '$in': [req.query.food]
+            // find by name
+            if (req.query.name) {
+                criteria['name'] = {
+                    '$regex': req.query.name,
+                    '$options': 'i'
                 }
             }
 
-            // console.log(criteria)
+            // find by flower type
+            if (req.query.flower_type) {
+                criteria['flower_type'] = {
+                    '$all': req.query.flower_type
+                }
+            }
 
-            let sightings = await db.collection('listings').find(criteria).toArray();
+            // find by occasion
+            if (req.query.occasion) {
+                criteria['occasion'] = {
+                    '$all': req.query.occasion
+                }
+            }
+
+            console.log(criteria)
+
+            let listings = await db.collection('listings')
+                .find(criteria)
+                .toArray();
             res.status(200);
-            res.send(sightings);
+            res.send(listings);
         } catch (e) {
             res.status(500);
             res.send({
-                'error':"We have encountered an internal server error"
-            })         
+                'error': "We have encountered an internal server error"
+            })
         }
-    })    
+    })
+
+    // Create and send to listing Page
+    app.post('/listings', async (req, res) => {
+
+        try {
+            // req.body is an object that contains the
+            // data sent to the express endpoint
+            let name = req.body.name;
+            let date_listed = req.body.datetime ? new Date(req.body.datetime) : new Date();
+            let flower_type = [req.body.flower_type];
+            let price = req.body.price;
+            let occasion = [req.body.occasion]
+            let quantity = req.body.quantity
+            let image = req.body.image
+
+            let db = MongoUtil.getDB();
+            let result = await db.collection('listings').insertOne({
+                name, date_listed, flower_type, price, occasion, quantity, image
+            })
+
+            // inform the client that the process is successful
+            res.status(200);
+            res.json(result);
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.log(e);
+        }
+    })
+
+    // Update listing (Update the whole document)
+    app.put('/listings/:id', async (req, res) => {
+        try {
+            let name = req.body.name;
+            let date_listed = req.body.datetime ? new Date(req.body.datetime) : new Date();
+            let flower_type = [req.body.flower_type];
+            let price = req.body.price;
+            let occasion = [req.body.occasion]
+            let quantity = req.body.quantity
+            let image = req.body.image
+
+            let db = MongoUtil.getDB()
+            let results = await db.collection('listings').updateOne({
+                '_id': ObjectId(req.params.id)
+            }, {
+                '$set': {
+                    name, date_listed, flower_type, price, occasion, quantity, image
+                }
+            })
+            res.status(200)
+            res.send(results)
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.log(e);
+        }
+    })
+
+    // Delete listing
+    app.delete('/listings/:id', async (req, res) => {
+        try {
+            let db = MongoUtil.getDB();
+            let results = await db.collection('listings').remove({
+                '_id': ObjectId(req.params.id)
+            })
+            res.status(200);
+            res.send(results);
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.log(e);
+        }
+    })
+    
 }
 
 main();
