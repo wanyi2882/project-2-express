@@ -36,7 +36,7 @@ async function main() {
             // find by flower type
             if (req.query.flower_type) {
                 criteria['flower_type'] = {
-                    '$all': req.query.flower_type
+                    '$in': [req.query.flower_type]
                 }
             }
 
@@ -44,6 +44,13 @@ async function main() {
             if (req.query.occasion) {
                 criteria['occasion'] = {
                     '$all': req.query.occasion
+                }
+            }
+
+            // filter by price
+            if (req.query.price) {
+                criteria['price'] = {
+                    '$gt': req.query.price
                 }
             }
 
@@ -141,7 +148,7 @@ async function main() {
         }
     })
 
-    // Read Florists collection
+    // Read florists collection
     app.get('/florists', async (req, res) => {
 
         try {
@@ -149,10 +156,11 @@ async function main() {
 
             // start with an empty critera object
             let criteria = {};
-   
+
             let florists = await db.collection('florists')
                 .find(criteria)
                 .toArray();
+
             res.status(200);
             res.send(florists);
         } catch (e) {
@@ -163,16 +171,16 @@ async function main() {
         }
     })
 
-    // Update florist document
-    app.post('/florists', async (req, res) =>{
+    // Create florist document
+    app.post('/florists', async (req, res) => {
         try {
             let name = req.body.name
             let number = req.body.number
             let email = req.body.email
             let instagram = req.body.instagram
             let facebook = req.body.facebook
-            let social_media = {facebook, instagram}
-            let contact = {number, email, social_media}
+            let social_media = { facebook, instagram }
+            let contact = { number, email, social_media }
 
             console.log(contact)
 
@@ -193,6 +201,54 @@ async function main() {
             console.log(e);
         }
     })
+
+    // Update florist (Update the whole document)
+    app.put('/florists/:id', async (req, res) => {
+        try {
+            let name = req.body.name
+            let number = req.body.number
+            let email = req.body.email
+            let instagram = req.body.instagram
+            let facebook = req.body.facebook
+            let social_media = { facebook, instagram }
+            let contact = { number, email, social_media }
+
+            let db = MongoUtil.getDB()
+            let results = await db.collection('florists').updateOne({
+                '_id': ObjectId(req.params.id)
+            }, {
+                '$set': {
+                    name, contact
+                }
+            })
+            res.status(200)
+            res.send(results)
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.log(e);
+        }
+    })
+
+    // Delete florist
+    app.delete('/florists/:id', async (req, res) => {
+        try {
+            let db = MongoUtil.getDB();
+            let results = await db.collection('florists').remove({
+                '_id': ObjectId(req.params.id)
+            })
+            res.status(200);
+            res.send(results);
+        } catch (e) {
+            res.status(500);
+            res.json({
+                'error': "We have encountered an interal server error. Please contact admin"
+            });
+            console.log(e);
+        }
+    })    
 
 }
 
