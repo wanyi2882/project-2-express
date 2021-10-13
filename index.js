@@ -76,7 +76,7 @@ async function main() {
             // req.body is an object that contains the
             // data sent to the express endpoint
             let name = req.body.name;
-            let date_listed = req.body.datetime ? new Date(req.body.datetime) : new Date();
+            let date_listed = new Date().getFullYear()+'-'+(new Date().getMonth()+1)+'-'+ new Date().getDate();
             let flower_type = [req.body.flower_type];
             let price = req.body.price;
             let occasion = [req.body.occasion]
