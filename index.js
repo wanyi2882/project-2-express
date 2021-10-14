@@ -77,9 +77,9 @@ async function main() {
             // data sent to the express endpoint
             let name = req.body.name;
             let date_listed = new Date().getFullYear()+'-'+(new Date().getMonth()+1)+'-'+ new Date().getDate();
-            let flower_type = [req.body.flower_type];
+            let flower_type = req.body.flower_type;
             let price = req.body.price;
-            let occasion = [req.body.occasion]
+            let occasion = req.body.occasion
             let quantity = req.body.quantity
             let image = req.body.image
 
@@ -88,9 +88,39 @@ async function main() {
                 name, date_listed, flower_type, price, occasion, quantity, image
             })
 
-            // inform the client that the process is successful
-            res.status(200);
-            res.json(result);
+            let error = ""
+
+            if (name.length < 1){
+                error = error + "Name is too short. "
+            }
+            
+            if (flower_type.length < 1) {
+                error = error + "Please choose at least one flower type. "
+            }
+            
+            if (parseFloat(price) <= 0) {
+                error = error + "Please enter price. "
+            } 
+        
+            if (parseInt(quantity) <= 0) {
+                error = error + "Please enter quantity more than 0. "
+            } 
+        
+            if (occasion < 1) {
+                error = error + "Please choose at least one occasion. "
+            } 
+        
+            if (image.length < 1){
+                error = error + "Please enter URL of image. "
+            } 
+
+            if (error == "") {
+                res.status(200);
+                res.json(result); 
+            } else {
+                res.status(400)
+                res.json(error)
+            }
         } catch (e) {
             res.status(500);
             res.json({
