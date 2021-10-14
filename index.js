@@ -83,11 +83,6 @@ async function main() {
             let quantity = req.body.quantity
             let image = req.body.image
 
-            let db = MongoUtil.getDB();
-            let result = await db.collection('listings').insertOne({
-                name, date_listed, flower_type, price, occasion, quantity, image
-            })
-
             let error = ""
 
             if (name.length < 1){
@@ -115,11 +110,19 @@ async function main() {
             } 
 
             if (error == "") {
+                let db = MongoUtil.getDB();
+                let result = await db.collection('listings').insertOne({
+                    name, date_listed, flower_type, price, occasion, quantity, image
+                })
+
                 res.status(200);
                 res.json(result); 
-            } else {
+            } 
+            
+            else {
                 res.status(400)
                 res.json(error)
+                console.log(error)
             }
         } catch (e) {
             res.status(500);
