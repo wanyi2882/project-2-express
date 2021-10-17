@@ -208,24 +208,65 @@ async function main() {
     app.post('/florists', async (req, res) => {
         try {
             let name = req.body.name
+            let username = req.body.username
+            let login_email = req.body.login_email
+            let contact_method = req.body.contact_method
             let number = req.body.number
-            let email = req.body.email
             let instagram = req.body.instagram
             let facebook = req.body.facebook
-            let social_media = { facebook, instagram }
-            let contact = { number, email, social_media }
+            let contact = { number, instagram, facebook }
 
-            console.log(contact)
+            let error = ""
 
+            if(name.length < 1){
+                error = error + "Please provide name of florist. "
+            }
 
+            if(username.length < 8){
+                error = error + "Please provide username with at least 8 characters. "
+            }
+
+            if(!login_email.includes("@") || !login_email.includes(".")){
+                error = error + "Please provide a valid email address for login. "
+            }
+
+            if(contact_method.length < 1){
+                error = error + "Please choose at least one way to be contacted by buyers. "
+            }
+
+            if(contact_method.includes("whatsapp")){
+                if(number.length < 8){
+                    error = error + "Please provide a valid 8 digit contact number. "
+                }
+            }
+
+            if(contact_method.includes("instagram")){
+                if(!instagram.includes("instagram.com")){
+                    error = error + "Please enter a valid Instagram URL. "
+                }
+            }
+
+            if(contact_method.includes("facebook")){
+                if(!facebook.includes("facebook.com")){
+                    error = error + "Please enter a valid Facebook URL. "
+                }
+            }
+
+            if(error == ""){
             let db = MongoUtil.getDB();
             let result = await db.collection('florists').insertOne({
-                name, contact
+                name, contact, username, login_email, contact_method
             })
 
             // inform the client that the process is successful
             res.status(200);
-            res.json(result);
+            res.json(result);                
+            } else {
+                res.status(400);
+                res.json(error)
+            }
+
+
         } catch (e) {
             res.status(500);
             res.json({
@@ -239,12 +280,13 @@ async function main() {
     app.put('/florists/:id', async (req, res) => {
         try {
             let name = req.body.name
+            let username = req.body.username
+            let login_email = req.body.login_email
+            let contact_method = req.body.contact_method
             let number = req.body.number
-            let email = req.body.email
             let instagram = req.body.instagram
             let facebook = req.body.facebook
-            let social_media = { facebook, instagram }
-            let contact = { number, email, social_media }
+            let contact = { number, instagram, facebook }
 
             let db = MongoUtil.getDB()
             let results = await db.collection('florists').updateOne({
