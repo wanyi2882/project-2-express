@@ -187,15 +187,26 @@ async function main() {
         try {
             let db = MongoUtil.getDB();
 
-            // start with an empty critera object
-            let criteria = {};
-
             let florists = await db.collection('florists')
-                .find(criteria)
+                .find({
+                    username: req.query.username,
+                    login_email: req.query.login_email
+                })
+                .project({
+                    name: 1,
+                    contact: 1,
+                    contact_method: 1})
                 .toArray();
 
+                console.log(florists)
+
+            if (florists == ""){
+                res.status(400)
+                res.send("Username or Login Email is incorrect / incomplete / not found. ")
+            } else if (!florists == ""){
             res.status(200);
-            res.send(florists);
+            res.send(florists);                
+            }    
         } catch (e) {
             res.status(500);
             res.send({
@@ -293,7 +304,7 @@ async function main() {
                 '_id': ObjectId(req.params.id)
             }, {
                 '$set': {
-                    name, contact
+                    name, contact, contact_method, username, login_email
                 }
             })
             res.status(200)
