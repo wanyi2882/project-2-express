@@ -25,6 +25,14 @@ async function main() {
             // start with an empty critera object
             let criteria = {};
 
+            // find by florist email
+            if (req.query.floristEmail) {
+                criteria['florist.email'] = 
+                    {
+                    '$eq': req.query.floristEmail}
+                
+            }
+
             // find by name
             if (req.query.name) {
                 criteria['name'] = {
@@ -54,7 +62,7 @@ async function main() {
                 }
             }
 
-            console.log(criteria)
+            //console.log(criteria)
 
             let listings = await db.collection('listings')
                 .find(criteria)
@@ -192,10 +200,10 @@ async function main() {
                     username: req.query.username,
                     login_email: req.query.login_email
                 })
-                .project({
-                    name: 1,
-                    contact: 1,
-                    contact_method: 1})
+                // .project({
+                //     name: 1,
+                //     contact: 1,
+                //     contact_method: 1})
                 .toArray();
 
                 console.log(florists)
@@ -298,6 +306,42 @@ async function main() {
             let instagram = req.body.instagram
             let facebook = req.body.facebook
             let contact = { number, instagram, facebook }
+
+            let error = ""
+
+            if(name.length < 1){
+                error = error + "Please provide name of florist. "
+            }
+
+            if(username.length < 8){
+                error = error + "Please provide username with at least 8 characters. "
+            }
+
+            if(!login_email.includes("@") || !login_email.includes(".")){
+                error = error + "Please provide a valid email address for login. "
+            }
+
+            if(contact_method.length < 1){
+                error = error + "Please choose at least one way to be contacted by buyers. "
+            }
+
+            if(contact_method.includes("whatsapp")){
+                if(number.length < 8){
+                    error = error + "Please provide a valid 8 digit contact number. "
+                }
+            }
+
+            if(contact_method.includes("instagram")){
+                if(!instagram.includes("instagram.com")){
+                    error = error + "Please enter a valid Instagram URL. "
+                }
+            }
+
+            if(contact_method.includes("facebook")){
+                if(!facebook.includes("facebook.com")){
+                    error = error + "Please enter a valid Facebook URL. "
+                }
+            }
 
             let db = MongoUtil.getDB()
             let results = await db.collection('florists').updateOne({
