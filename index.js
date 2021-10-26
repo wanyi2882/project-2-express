@@ -27,10 +27,11 @@ async function main() {
 
             // find by florist email
             if (req.query.floristEmail) {
-                criteria['florist.email'] = 
-                    {
-                    '$eq': req.query.floristEmail}
-                
+                criteria['florist.email'] =
+                {
+                    '$eq': req.query.floristEmail
+                }
+
             }
 
             // find by name
@@ -96,47 +97,51 @@ async function main() {
             let number = req.body.number
             let instagram = req.body.instagram
             let facebook = req.body.facebook
-            let contact = {number, instagram, facebook}
+            let contact = { number, instagram, facebook }
             let contact_method = req.body.contact_method
-            let florist = {florist_id, florist_name, contact, contact_method}
+            let florist = { florist_id, florist_name, contact, contact_method }
 
             let error = ""
 
-            if (name.length < 1){
+            if (name.length < 1) {
                 error = error + "Name is too short. "
             }
-            
+
+            if (name.description < 1) {
+                error = error + "Please provide description of listing. "
+            }
+
             if (flower_type.length < 1) {
                 error = error + "Please choose at least one flower type. "
             }
-            
-            if (parseFloat(price) <= 0) {
+
+            if (parseFloat(price) <= 0 || !parseFloat(price)) {
                 error = error + "Please enter price. "
-            } 
-        
-            if (parseInt(quantity) <= 0) {
+            }
+
+            if (parseInt(quantity) <= 0 || !parseInt(quantity)) {
                 error = error + "Please enter quantity more than 0. "
-            } 
-        
-            if (occasion < 1) {
+            }
+
+            if (occasion.length < 1) {
                 error = error + "Please choose at least one occasion. "
-            } 
-        
-            if (image.length < 1){
-                error = error + "Please enter URL of image. "
-            } 
+            }
+
+            if (!image.endsWith(".jpg") && !image.endsWith(".png") && !image.endsWith(".jpeg")) {
+                error = error + "Please provide a jpeg/jpg/jpg image. "
+            }
 
             if (error == "") {
                 let db = MongoUtil.getDB();
                 let result = await db.collection('listings').insertOne({
-                    name, date_listed, description, flower_type, price, occasion, quantity, image, 
+                    name, date_listed, description, flower_type, price, occasion, quantity, image,
                     florist
                 })
 
                 res.status(200);
-                res.json(result); 
-            } 
-            
+                res.json(result);
+            }
+
             else {
                 res.status(400)
                 res.json(error)
@@ -157,9 +162,9 @@ async function main() {
             let name = req.body.name;
             let date_listed = req.body.datetime ? new Date(req.body.datetime) : new Date();
             let description = req.body.description;
-            let flower_type = [req.body.flower_type];
+            let flower_type = req.body.flower_type;
             let price = req.body.price;
-            let occasion = [req.body.occasion]
+            let occasion = req.body.occasion
             let quantity = req.body.quantity
             let image = req.body.image
             let florist_id = ObjectId(req.body.florist_id)
@@ -167,20 +172,58 @@ async function main() {
             let number = req.body.number
             let instagram = req.body.instagram
             let facebook = req.body.facebook
-            let contact = {number, instagram, facebook}
+            let contact = { number, instagram, facebook }
             let contact_method = req.body.contact_method
-            let florist = {florist_id, florist_name, contact, contact_method}
+            let florist = { florist_id, florist_name, contact, contact_method }
 
-            let db = MongoUtil.getDB()
-            let results = await db.collection('listings').updateOne({
-                '_id': ObjectId(req.params.id)
-            }, {
-                '$set': {
-                    name, date_listed, description, flower_type, price, occasion, quantity, image, florist
-                }
-            })
-            res.status(200)
-            res.send(results)
+            let error = ""
+
+            if (name.length < 1) {
+                error = error + "Name is too short. "
+            }
+
+            if (name.description < 1) {
+                error = error + "Please provide description of listing. "
+            }
+
+            if (flower_type.length < 1) {
+                error = error + "Please choose at least one flower type. "
+            }
+
+            if (parseFloat(price) <= 0 || !parseFloat(price)) {
+                error = error + "Please enter price. "
+            }
+
+            if (parseInt(quantity) <= 0 || !parseInt(quantity)) {
+                error = error + "Please enter quantity more than 0. "
+            }
+
+            if (occasion.length < 1) {
+                error = error + "Please choose at least one occasion. "
+            }
+
+            if (!image.endsWith(".jpg") && !image.endsWith(".png") && !image.endsWith(".jpeg")) {
+                error = error + "Please provide a jpeg/jpg/jpg image. "
+            }
+
+            if (error == "") {
+                let db = MongoUtil.getDB()
+                let results = await db.collection('listings').updateOne({
+                    '_id': ObjectId(req.params.id)
+                }, {
+                    '$set': {
+                        name, date_listed, description, flower_type, price, occasion, quantity, image, florist
+                    }
+                })
+
+                console.log(results)
+                res.status(200)
+                res.send(results)
+            } else {
+                res.status(400)
+                res.send(error)
+            }
+
         } catch (e) {
             res.status(500);
             res.json({
@@ -225,15 +268,15 @@ async function main() {
                 //     contact_method: 1})
                 .toArray();
 
-                console.log(florists)
+            console.log(florists)
 
-            if (florists == ""){
+            if (florists == "") {
                 res.status(400)
                 res.send("Username or Login Email is incorrect / incomplete / not found. ")
-            } else if (!florists == ""){
-            res.status(200);
-            res.send(florists);                
-            }    
+            } else if (!florists == "") {
+                res.status(200);
+                res.send(florists);
+            }
         } catch (e) {
             res.status(500);
             res.send({
@@ -256,49 +299,49 @@ async function main() {
 
             let error = ""
 
-            if(name.length < 1){
+            if (name.length < 1) {
                 error = error + "Please provide name of florist. "
             }
 
-            if(username.length < 8){
+            if (username.length < 8) {
                 error = error + "Please provide username with at least 8 characters. "
             }
 
-            if(!login_email.includes("@") || !login_email.includes(".")){
+            if (!login_email.includes("@") || !login_email.includes(".")) {
                 error = error + "Please provide a valid email address for login. "
             }
 
-            if(contact_method.length < 1){
+            if (contact_method.length < 1) {
                 error = error + "Please choose at least one way to be contacted by buyers. "
             }
 
-            if(contact_method.includes("whatsapp")){
-                if(number.length < 8){
+            if (contact_method.includes("whatsapp")) {
+                if (number.length < 8) {
                     error = error + "Please provide a valid 8 digit contact number. "
                 }
             }
 
-            if(contact_method.includes("instagram")){
-                if(!instagram.includes("instagram.com")){
+            if (contact_method.includes("instagram")) {
+                if (!instagram.includes("instagram.com")) {
                     error = error + "Please enter a valid Instagram URL. "
                 }
             }
 
-            if(contact_method.includes("facebook")){
-                if(!facebook.includes("facebook.com")){
+            if (contact_method.includes("facebook")) {
+                if (!facebook.includes("facebook.com")) {
                     error = error + "Please enter a valid Facebook URL. "
                 }
             }
 
-            if(error == ""){
-            let db = MongoUtil.getDB();
-            let result = await db.collection('florists').insertOne({
-                name, contact, username, login_email, contact_method
-            })
+            if (error == "") {
+                let db = MongoUtil.getDB();
+                let result = await db.collection('florists').insertOne({
+                    name, contact, username, login_email, contact_method
+                })
 
-            // inform the client that the process is successful
-            res.status(200);
-            res.json(result);                
+                // inform the client that the process is successful
+                res.status(200);
+                res.json(result);
             } else {
                 res.status(400);
                 res.json(error)
@@ -328,36 +371,36 @@ async function main() {
 
             let error = ""
 
-            if(name.length < 1){
+            if (name.length < 1) {
                 error = error + "Please provide name of florist. "
             }
 
-            if(username.length < 8){
+            if (username.length < 8) {
                 error = error + "Please provide username with at least 8 characters. "
             }
 
-            if(!login_email.includes("@") || !login_email.includes(".")){
+            if (!login_email.includes("@") || !login_email.includes(".")) {
                 error = error + "Please provide a valid email address for login. "
             }
 
-            if(contact_method.length < 1){
+            if (contact_method.length < 1) {
                 error = error + "Please choose at least one way to be contacted by buyers. "
             }
 
-            if(contact_method.includes("whatsapp")){
-                if(number.length < 8){
+            if (contact_method.includes("whatsapp")) {
+                if (number.length < 8) {
                     error = error + "Please provide a valid 8 digit contact number. "
                 }
             }
 
-            if(contact_method.includes("instagram")){
-                if(!instagram.includes("instagram.com")){
+            if (contact_method.includes("instagram")) {
+                if (!instagram.includes("instagram.com")) {
                     error = error + "Please enter a valid Instagram URL. "
                 }
             }
 
-            if(contact_method.includes("facebook")){
-                if(!facebook.includes("facebook.com")){
+            if (contact_method.includes("facebook")) {
+                if (!facebook.includes("facebook.com")) {
                     error = error + "Please enter a valid Facebook URL. "
                 }
             }
@@ -397,7 +440,7 @@ async function main() {
             });
             console.log(e);
         }
-    })    
+    })
 
 }
 
