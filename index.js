@@ -85,6 +85,7 @@ async function main() {
             // data sent to the express endpoint
             let name = req.body.name;
             let date_listed = new Date();
+            let description = req.body.description
             let flower_type = req.body.flower_type;
             let price = req.body.price;
             let occasion = req.body.occasion
@@ -128,7 +129,7 @@ async function main() {
             if (error == "") {
                 let db = MongoUtil.getDB();
                 let result = await db.collection('listings').insertOne({
-                    name, date_listed, flower_type, price, occasion, quantity, image, 
+                    name, date_listed, description, flower_type, price, occasion, quantity, image, 
                     florist
                 })
 
@@ -155,18 +156,27 @@ async function main() {
         try {
             let name = req.body.name;
             let date_listed = req.body.datetime ? new Date(req.body.datetime) : new Date();
+            let description = req.body.description;
             let flower_type = [req.body.flower_type];
             let price = req.body.price;
             let occasion = [req.body.occasion]
             let quantity = req.body.quantity
             let image = req.body.image
+            let florist_id = ObjectId(req.body.florist_id)
+            let florist_name = req.body.florist_name
+            let number = req.body.number
+            let instagram = req.body.instagram
+            let facebook = req.body.facebook
+            let contact = {number, instagram, facebook}
+            let contact_method = req.body.contact_method
+            let florist = {florist_id, florist_name, contact, contact_method}
 
             let db = MongoUtil.getDB()
             let results = await db.collection('listings').updateOne({
                 '_id': ObjectId(req.params.id)
             }, {
                 '$set': {
-                    name, date_listed, flower_type, price, occasion, quantity, image
+                    name, date_listed, description, flower_type, price, occasion, quantity, image, florist
                 }
             })
             res.status(200)
