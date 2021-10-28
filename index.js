@@ -132,6 +132,32 @@ async function main() {
                 error = error + "Please provide a jpeg/jpg/jpg image. "
             }
 
+            if (florist_name.length < 1) {
+                error = error + "Please provide name of florist. "
+            }
+
+            if (contact_method.length < 1) {
+                error = error + "Please choose at least one way to be contacted by buyers. "
+            }
+
+            if (contact_method.includes("whatsapp")) {
+                if (number.length < 8) {
+                    error = error + "Please provide a valid 8 digit contact number. "
+                }
+            }
+
+            if (contact_method.includes("instagram")) {
+                if (!instagram.includes("instagram.com")) {
+                    error = error + "Please enter a valid Instagram URL. "
+                }
+            }
+
+            if (contact_method.includes("facebook")) {
+                if (!facebook.includes("facebook.com")) {
+                    error = error + "Please enter a valid Facebook URL. "
+                }
+            }
+
             if (error == "") {
                 let db = MongoUtil.getDB();
                 let result = await db.collection('listings').insertOne({
