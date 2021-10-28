@@ -44,8 +44,9 @@ async function main() {
 
             // find by flower type
             if (req.query.flower_type) {
+                let array = req.query.flower_type.split(",")
                 criteria['flower_type'] = {
-                    '$in': [req.query.flower_type]
+                    '$in': array
                 }
             }
 
@@ -63,7 +64,7 @@ async function main() {
                 }
             }
 
-            //console.log(criteria)
+            console.log(criteria)
 
             let listings = await db.collection('listings')
                 .find(criteria)
