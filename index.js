@@ -237,12 +237,30 @@ async function main() {
     // Delete listing
     app.delete('/listings/:id', async (req, res) => {
         try {
+
             let db = MongoUtil.getDB();
-            let results = await db.collection('listings').remove({
-                '_id': ObjectId(req.params.id)
-            })
-            res.status(200);
-            res.send(results);
+
+            let florist = await db.collection('florists').find({
+                '$and': [{
+                    '_id': { '$eq': ObjectId(req.body.florist_id) },
+                    'login_email': { '$eq': req.body.login_email }
+                }
+                ]
+            }).count()
+
+            console.log(florist)
+
+            if (florist == 1) {
+                let results = await db.collection('listings').deleteOne({
+                    '_id': ObjectId(req.params.id)
+                })
+                res.status(200);
+                res.send(results);
+            } else {
+                res.status(400);
+                res.send("Email or florist ID incorrect.")
+            }
+
         } catch (e) {
             res.status(500);
             res.json({
