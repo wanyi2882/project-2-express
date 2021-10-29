@@ -31,17 +31,15 @@ async function main() {
                 {
                     '$eq': req.query.floristEmail
                 }
-
             }
 
-            // find by name
-            if (req.query.name) {
-                criteria['name'] = {
-                    '$regex': req.query.name,
+            // find by description
+            if (req.query.description) {
+                criteria['description'] = {
+                    '$regex': req.query.description,
                     '$options': 'i'
                 }
             }
-
             // find by flower type
             if (req.query.flower_type) {
                 let array = req.query.flower_type.split(",")
@@ -52,8 +50,9 @@ async function main() {
 
             // find by occasion
             if (req.query.occasion) {
+                let array = req.query.occasion.split(",")
                 criteria['occasion'] = {
-                    '$all': req.query.occasion
+                    '$in': array
                 }
             }
 
@@ -492,6 +491,8 @@ async function main() {
 main();
 
 // START SERVER
-app.listen(process.env.PORT, () => {
+// Deployment port: process.env.PORT
+// Testing port: 3000
+app.listen(3000, () => {
     console.log("Server started")
 })
