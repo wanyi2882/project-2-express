@@ -25,14 +25,6 @@ async function main() {
             // start with an empty critera object
             let criteria = {};
 
-            // find by florist email
-            if (req.query.floristEmail) {
-                criteria['florist.email'] =
-                {
-                    '$eq': req.query.floristEmail
-                }
-            }
-
             // find by description
             if (req.query.description) {
                 criteria['description'] = {
@@ -57,9 +49,22 @@ async function main() {
             }
 
             // filter by price
-            if (req.query.price) {
+            if (req.query.price_greater) {
                 criteria['price'] = {
-                    '$gt': req.query.price
+                    '$gt': parseFloat(req.query.price_greater)
+                }
+            }
+
+            if (req.query.price_lesser) {
+                criteria['price'] = {
+                    '$lt': parseFloat(req.query.price_lesser)
+                }
+            }
+
+            if (req.query.price_greater && req.query.price_lesser) {
+                criteria['price'] = {
+                    '$gt': parseFloat(req.query.price_greater),
+                    '$lt': parseFloat(req.query.price_lesser)
                 }
             }
 
