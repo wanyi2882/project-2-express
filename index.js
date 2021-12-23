@@ -72,6 +72,7 @@ async function main() {
 
             let listings = await db.collection('listings')
                 .find(criteria)
+                .project()
                 .toArray();
             res.status(200);
             res.send(listings);
@@ -311,6 +312,7 @@ async function main() {
                     username: req.query.username,
                     login_email: req.query.login_email
                 })
+                .project()
                 // .project({
                 //     name: 1,
                 //     contact: 1,
