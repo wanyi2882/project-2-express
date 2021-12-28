@@ -71,8 +71,19 @@ async function main() {
             console.log(criteria)
 
             let listings = await db.collection('listings')
-                .find(criteria)
-                .project()
+                .find(criteria, {
+                    'projection': {
+                        "name": 1,
+                        "flower_type": 1,
+                        "price": 1,
+                        "date_listed": 1,
+                        "occasion": 1,
+                        "quantity": 1,
+                        "image": 1,
+                        "florist": 1, 
+                        "description": 1
+                    }
+                })
                 .toArray();
             res.status(200);
             res.send(listings);
@@ -500,6 +511,6 @@ main();
 // START SERVER
 // Deployment port: process.env.PORT
 // Testing port: 3000
-app.listen(process.env.PORT, () => {
+app.listen(3000, () => {
     console.log("Server started")
 })
